@@ -40,31 +40,30 @@ const server = http.createServer((req, res) => {
   if (pathName === "/hello") {
     res.end("ini hello ke FSW 2");
   } else if (pathName === "/product") {
-    res.end(
-      JSON.stringify({
+    res.end(JSON.stringify({
         data: "ini product",
-      })
-    );
-  } else if (pathName === "/api") {
-    const data = fs.readFileSync("$__dirname}/dev-data/data.json");
-    res.writeHead(200, {
-      "content-type": "application/json",
+      }));
+    } else if (pathName === '/api'){
+      const data = fs.readFileSync(`${__dirname}/dev-data/data.json`);
+      res.writeHead(200, {
+        "content-type" : "application/json",
     });
     res.end(data);
-  } else if (pathName === "/overview") {
-    const overviewPage = fs.readFileSync("${__dirname}/template/overview.html");
-    res.writeHead(200, {
-      "content-type": "text/html",
-    });
-    res.end(overviewPage);
+    } else if (pathName === `/overview`) {
+      const overviewPage = fs.readFileSync(`${__dirname}/templates/overview.html`);
+      res.writeHead(200, {
+        "content-type" : `text.html`,
+      });
+      res.end(overviewPage);
   } else {
-    res.writeHead(404, {
-      "content-type": "text/html",
+    res.writeHead(404, {  
+      "content-type" : "text/html",
     });
     res.end("<h1>url ini gak ada apa2</h1>");
   }
+
 });
 
 server.listen(8000, "127.0.0.1", () => {
-  console.log("Hello Servernya Jalan!!!");
+  console.log("Hello Server nya Jalan!!!");
 });
