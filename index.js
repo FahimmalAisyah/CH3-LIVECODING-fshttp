@@ -1,6 +1,5 @@
 const fs = require("fs");
 const http = require("http");
-const { json } = require("stream/consumers");
 const url = require("url");
 
 //////////////////////
@@ -34,27 +33,64 @@ const url = require("url");
 
 //////////////////
 // SERVER DENGAN HTTP
-const server = http.createServer((req, res) => {
-  const pathName = req.url;
+const replaceTemplate = (template, product) => {
+  console.log(product)
+  let output = template.replace(/{%PRODUCTNAME%}/g, product.productName);
+  output = output.replace(/{%IMAGE%}/g, product.image);
+  output = output.replace(/{%QUANTITY%}/g, product.quantity);
+  output = output.replace(/{%PRICE%}/g, product.price);
+  output = output.replace(/{%DESCRIPTION%}/g, product.description);
+  output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
+  output = output.replace(/{%FROM%}/g, product.from);
+  output = output.replace(/{%ID%}/g, product.id);
 
+  if(!product.organic) output = output.replace(/{%NOT_ORGANIC%}/g, `not-organic`);
+  return output;
+}
+
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, `utf-8`);
+const dataOBj = JSON.parse(data);
+
+const overviewPage = fs.readFileSync(`${__dirname}/templates/overview.html`, `utf-8`);
+const productTemplate = fs.readFileSync(`${__dirname}/templates/product.html`, `utf-8`);
+const productCardTemplate = fs.readFileSync(`${__dirname}/templates/template-card.html`, `utf-8`);
+
+const server = http.createServer((req, res) => {
+  // let = url.parse(req.url, true). pathname;
+  const {query} = url.parse(req.url, true).query;
+  const pathName = req.url;
+  console.log(pathName)
+
+  // HELLO PAGE
   if (pathName === "/hello") {
     res.end("ini hello ke FSW 2");
+
+  // PRODUCT PAGE
   } else if (pathName === "/product") {
     res.end(JSON.stringify({
         data: "ini product",
       }));
+
+  // SIMPLE API
     } else if (pathName === '/api'){
-      const data = fs.readFileSync(`${__dirname}/dev-data/data.json`);
       res.writeHead(200, {
         "content-type" : "application/json",
     });
     res.end(data);
-    } else if (pathName === `/overview`) {
-      const overviewPage = fs.readFileSync(`${__dirname}/templates/overview.html`);
+
+  // OVERVIEW PAGE 
+    } else if (pathName === '/overview') {
       res.writeHead(200, {
         "content-type" : `text.html`,
       });
-      res.end(overviewPage);
+
+      const productCardHtml = dataOBj.map(el => replaceTemplate(productCardTemplate, el));
+      const output = overviewPage.replace(`%PRODUCT_CARDS%`, productCardHtml)
+      res.end(output);
+
+      
+
+  // TIDAK ADA APA APA
   } else {
     res.writeHead(404, {  
       "content-type" : "text/html",
